@@ -14,6 +14,7 @@
         android:layout_height="match_parent"
         android:text="@string/description_case"
         android:textAlignment="center"
+        android:onClick="send_message_to_mobile"
         app:layout_box="all" />
 
     <TextView

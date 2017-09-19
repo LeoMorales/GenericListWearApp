@@ -1,10 +1,19 @@
 package com.example.leomorales.genericlistwear;
 
+import android.content.Intent;
 import android.os.Bundle;
+import android.speech.RecognizerIntent;
 import android.support.wearable.activity.WearableActivity;
 import android.support.wearable.view.BoxInsetLayout;
 import android.view.View;
 import android.widget.TextView;
+import android.widget.Toast;
+
+import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.wearable.MessageApi;
+import com.google.android.gms.wearable.Node;
+import com.google.android.gms.wearable.NodeApi;
+import com.google.android.gms.wearable.Wearable;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -19,6 +28,9 @@ public class MainActivity extends WearableActivity {
     private TextView mTextView;
     private TextView mClockView;
 
+    private GoogleApiClient mGoogleApiClient;
+    private static final int SPEECH_REQUEST_CODE = 0;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -28,6 +40,12 @@ public class MainActivity extends WearableActivity {
         mContainerView = (BoxInsetLayout) findViewById(R.id.container);
         mTextView = (TextView) findViewById(R.id.text);
         mClockView = (TextView) findViewById(R.id.clock);
+
+        mGoogleApiClient = new GoogleApiClient.Builder(this)
+                .addApi(Wearable.API)
+                .build();
+        mGoogleApiClient.connect();
+
     }
 
     @Override
@@ -60,5 +78,23 @@ public class MainActivity extends WearableActivity {
             mTextView.setTextColor(getResources().getColor(android.R.color.black));
             mClockView.setVisibility(View.GONE);
         }
+    }
+
+    public void send_message_to_mobile(View v){
+        Toast.makeText(MainActivity.this, "Enviar", Toast.LENGTH_SHORT).show();
+        sendMessage(mGoogleApiClient, "nuevo/item", "wear message");
+    }
+    public static void sendMessage(final GoogleApiClient mApiClient, final String path, final String data) {
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                NodeApi.GetConnectedNodesResult nodes = Wearable.NodeApi.getConnectedNodes(mApiClient).await();
+                for (Node node : nodes.getNodes()) {
+                    MessageApi.SendMessageResult result = Wearable.MessageApi.sendMessage(
+                            mApiClient, node.getId(), path, data.getBytes()).await();
+
+                }
+            }
+        }).start();
     }
 }
