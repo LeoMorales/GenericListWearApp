@@ -5,6 +5,7 @@ import android.os.Bundle;
 import android.speech.RecognizerIntent;
 import android.support.wearable.activity.WearableActivity;
 import android.support.wearable.view.BoxInsetLayout;
+import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -17,6 +18,7 @@ import com.google.android.gms.wearable.Wearable;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.List;
 import java.util.Locale;
 
 public class MainActivity extends WearableActivity {
@@ -81,8 +83,7 @@ public class MainActivity extends WearableActivity {
     }
 
     public void send_message_to_mobile(View v){
-        Toast.makeText(MainActivity.this, "Enviar", Toast.LENGTH_SHORT).show();
-        sendMessage(mGoogleApiClient, "nuevo/item", "wear message");
+        start_voice_recognizer("Nueva pelicula");
     }
     public static void sendMessage(final GoogleApiClient mApiClient, final String path, final String data) {
         new Thread(new Runnable() {
@@ -97,4 +98,34 @@ public class MainActivity extends WearableActivity {
             }
         }).start();
     }
+
+    private void start_voice_recognizer(String encabezado) {
+        Intent intent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
+
+        intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL,
+                RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
+        intent.putExtra(RecognizerIntent.EXTRA_PROMPT,
+                encabezado);
+
+        // Start the activity, the intent will be populated with the speech text
+        startActivityForResult(intent, SPEECH_REQUEST_CODE);
+
+    }
+
+    // This callback is invoked when the Speech Recognizer returns.
+    // This is where you process the intent and extract the speech text from the intent.
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode,
+                                    Intent data) {
+        if (requestCode == SPEECH_REQUEST_CODE && resultCode == RESULT_OK) {
+            List<String> results = data.getStringArrayListExtra(
+                    RecognizerIntent.EXTRA_RESULTS);
+            String spokenText = results.get(0);
+            // Do something with spokenText
+            sendMessage(mGoogleApiClient, "nuevo/item", spokenText);
+            Toast.makeText(MainActivity.this, "Enviando...", Toast.LENGTH_SHORT).show();
+        }
+
+    }
+
 }

@@ -99,7 +99,7 @@ public class MainActivity extends ListActivity implements
                 + messageEvent.getRequestId() + " " + messageEvent.getPath() + " " + messageEvent.getData().toString());
         String message = new String(messageEvent.getData(), StandardCharsets.UTF_8);
         Toast.makeText(MainActivity.this, "From wear: " + message, Toast.LENGTH_SHORT).show();
-        this.mAdapter.add("New Movie from WEAR");
+        this.mAdapter.add(message);
     }
     /*
      * Callback section
